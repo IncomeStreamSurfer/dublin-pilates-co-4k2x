@@ -1,0 +1,154 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { supabase, sortClasses, formatTime, formatPrice, type PilatesClass } from '../lib/supabase';
+
+const { data, error } = await supabase.from('dp_classes').select('*');
+if (error) console.error('[dp_classes]', error.message);
+const classes = sortClasses((data ?? []) as PilatesClass[]);
+
+const preselectSlug = Astro.url.searchParams.get('class');
+const canceled = Astro.url.searchParams.get('canceled');
+
+const selected =
+  classes.find((c) => c.slug === preselectSlug) ??
+  classes.find((c) => c.spots_available > 0) ??
+  null;
+---
+
+<Layout
+  title="Book a Reformer Class · Dublin Pilates Co"
+  description="Reserve a reformer pilates class at Dublin Pilates Co. £25 per class. Small-group instruction in Dublin 2."
+>
+  <section class="max-w-6xl mx-auto px-6 py-16 md:py-24 grid md:grid-cols-12 gap-12">
+    <div class="md:col-span-5">
+      <span class="kicker">Booking</span>
+      <h1 class="font-display text-5xl md:text-6xl mt-3 mb-6 leading-[0.95]">
+        One hour,<br/><em class="italic text-umber">on the reformer.</em>
+      </h1>
+      <p class="text-ink/75 leading-relaxed mb-8">
+        Every class is £25 and lasts 50 minutes. Choose your time, pay securely with Stripe, and we'll see you ten
+        minutes before — kettle already on.
+      </p>
+
+      <div class="bg-bone/60 border border-sand/60 p-6 rounded-sm text-sm leading-relaxed">
+        <p class="kicker mb-3">What to know</p>
+        <ul class="space-y-2 text-ink/80">
+          <li>· Mats, reformers, and straps provided.</li>
+          <li>· Grip socks required (available at reception, €4).</li>
+          <li>· Wear fitted layers you can move in.</li>
+          <li>· 24hr cancellation for full credit.</li>
+        </ul>
+      </div>
+
+      {canceled && (
+        <div class="mt-6 border border-clay/60 bg-clay/10 p-4 text-sm text-umber rounded-sm">
+          Checkout was cancelled — no charge was made. Try again when you're ready.
+        </div>
+      )}
+    </div>
+
+    <div class="md:col-span-7">
+      {classes.length === 0 ? (
+        <div class="border border-sand/70 bg-white/60 p-10 text-center rounded-sm">
+          <p class="font-display text-2xl">No classes on the schedule yet.</p>
+          <p class="text-umber mt-2">Check back shortly.</p>
+        </div>
+      ) : (
+        <form
+          method="POST"
+          action="/api/checkout"
+          class="bg-white border border-sand/70 rounded-sm p-8 space-y-6"
+        >
+          <div>
+            <label class="kicker block mb-3">Select a class</label>
+            <div class="max-h-[360px] overflow-y-auto border border-sand/60 rounded-sm divide-y divide-sand/50">
+              {classes.map((cls) => {
+                const disabled = cls.spots_available < 1;
+                const isSelected = selected?.id === cls.id;
+                return (
+                  <label
+                    class={`flex items-center gap-4 p-4 cursor-pointer transition-colors ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-bone/40'} ${isSelected ? 'bg-bone/50' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="class_id"
+                      value={cls.id}
+                      required
+                      disabled={disabled}
+                      checked={isSelected}
+                      class="accent-ink"
+                    />
+                    <div class="flex-1">
+                      <p class="font-display text-xl leading-tight">{cls.name}</p>
+                      <p class="text-xs text-umber">
+                        {cls.day_of_week} · {formatTime(cls.start_time)} · {cls.instructor} · {cls.level}
+                      </p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-display">{formatPrice(cls.price_pence)}</p>
+                      <p class="text-[10px] uppercase tracking-widest text-umber">
+                        {disabled ? 'Full' : `${cls.spots_available} left`}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label for="name" class="kicker block mb-2">Your name</label>
+              <input
+                id="name"
+                name="customer_name"
+                required
+                type="text"
+                class="w-full border border-sand/80 bg-cream/50 rounded-sm px-4 py-3 focus:outline-none focus:ring-1 focus:ring-ink"
+                placeholder="Aisling Murphy"
+              />
+            </div>
+            <div>
+              <label for="email" class="kicker block mb-2">Email</label>
+              <input
+                id="email"
+                name="customer_email"
+                required
+                type="email"
+                class="w-full border border-sand/80 bg-cream/50 rounded-sm px-4 py-3 focus:outline-none focus:ring-1 focus:ring-ink"
+                placeholder="you@hello.com"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="phone" class="kicker block mb-2">Phone (optional)</label>
+            <input
+              id="phone"
+              name="customer_phone"
+              type="tel"
+              class="w-full border border-sand/80 bg-cream/50 rounded-sm px-4 py-3 focus:outline-none focus:ring-1 focus:ring-ink"
+              placeholder="+353 ..."
+            />
+          </div>
+
+          <div>
+            <label for="notes" class="kicker block mb-2">Anything we should know?</label>
+            <textarea
+              id="notes"
+              name="notes"
+              rows="3"
+              class="w-full border border-sand/80 bg-cream/50 rounded-sm px-4 py-3 focus:outline-none focus:ring-1 focus:ring-ink"
+              placeholder="First class, recent injury, etc."
+            ></textarea>
+          </div>
+
+          <div class="flex items-center justify-between pt-4 border-t border-sand/60">
+            <p class="text-sm text-umber">Secure checkout via Stripe.</p>
+            <button type="submit" class="btn-primary">Pay £25 &amp; book →</button>
+          </div>
+        </form>
+      )}
+    </div>
+  </section>
+</Layout>

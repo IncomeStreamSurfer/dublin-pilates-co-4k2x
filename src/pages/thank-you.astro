@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { stripe, hasStripe } from '../lib/stripe';
+
+const sessionId = Astro.url.searchParams.get('session_id');
+let session: Awaited<ReturnType<typeof stripe.checkout.sessions.retrieve>> | null = null;
+
+if (sessionId && hasStripe()) {
+  try {
+    session = await stripe.checkout.sessions.retrieve(sessionId);
+  } catch (e) {
+    console.error('[thank-you] failed to retrieve session', (e as Error).message);
+  }
+}
+
+const name = session?.customer_details?.name ?? 'friend';
+const amount = session?.amount_total ? (session.amount_total / 100).toFixed(2) : '25.00';
+const currency = (session?.currency ?? 'gbp').toUpperCase();
+---
+
+<Layout title="Thank you · Dublin Pilates Co" description="Your class is booked. See you on the reformer.">
+  <section class="max-w-3xl mx-auto px-6 py-28 text-center">
+    <span class="kicker">Booking confirmed</span>
+    <h1 class="font-display text-6xl md:text-7xl mt-4 mb-6 leading-[0.95]">
+      Thank you, <em class="italic text-umber">{name}.</em>
+    </h1>
+    <p class="text-lg text-ink/75 max-w-xl mx-auto mb-10 leading-relaxed">
+      Your mat is held. We've sent a confirmation to your inbox with the time, the address,
+      and the one thing to remember (grip socks). We'll see you at 17 Fitzwilliam Lane.
+    </p>
+
+    <div class="bg-bone/60 border border-sand/60 inline-block px-10 py-6 rounded-sm mb-12">
+      <p class="kicker mb-2">Paid</p>
+      <p class="font-display text-3xl">£{amount} {currency !== 'GBP' && currency}</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="/" class="btn-ghost">Back to studio</a>
+      <a href="/book" class="btn-primary">Book another class</a>
+    </div>
+  </section>
+</Layout>
