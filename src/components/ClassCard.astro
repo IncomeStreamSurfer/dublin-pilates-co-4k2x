@@ -1,0 +1,65 @@
+---
+import { formatTime, formatPrice, type PilatesClass } from '../lib/supabase';
+
+export interface Props {
+  cls: PilatesClass;
+  href?: string;
+  variant?: 'grid' | 'row';
+}
+
+const { cls, href = `/book?class=${cls.slug}`, variant = 'grid' } = Astro.props as Props;
+const soldOut = cls.spots_available < 1;
+const almost = !soldOut && cls.spots_available <= 2;
+---
+
+{variant === 'grid' && (
+  <article class="group flex flex-col bg-white/70 border border-sand/70 rounded-sm p-6 transition-colors hover:bg-white">
+    <div class="flex items-center justify-between mb-5">
+      <span class="kicker">{cls.day_of_week} · {formatTime(cls.start_time)}</span>
+      <span class="text-xs uppercase tracking-widest text-umber">{cls.level}</span>
+    </div>
+    <h3 class="font-display text-3xl mb-1">{cls.name}</h3>
+    <p class="text-sm text-umber mb-4">with {cls.instructor} · {cls.duration_mins} min</p>
+    {cls.description && <p class="text-sm leading-relaxed text-ink/75 mb-6">{cls.description}</p>}
+    <div class="mt-auto flex items-center justify-between pt-5 border-t border-sand/60">
+      <div>
+        <p class="text-lg font-display">{formatPrice(cls.price_pence)}</p>
+        <p class="text-xs text-umber">
+          {soldOut
+            ? 'Waitlist only'
+            : almost
+              ? `Only ${cls.spots_available} mat${cls.spots_available === 1 ? '' : 's'} left`
+              : `${cls.spots_available} of ${cls.spots_total} available`}
+        </p>
+      </div>
+      <a
+        href={soldOut ? '#' : href}
+        class={soldOut ? 'btn-ghost opacity-60 pointer-events-none' : 'btn-ghost'}
+      >
+        {soldOut ? 'Full' : 'Reserve'}
+      </a>
+    </div>
+  </article>
+)}
+
+{variant === 'row' && (
+  <article class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 py-5 border-b border-sand/60">
+    <div class="md:w-40 shrink-0">
+      <p class="font-display text-xl leading-tight">{cls.day_of_week}</p>
+      <p class="text-umber text-sm">{formatTime(cls.start_time)}</p>
+    </div>
+    <div class="flex-1">
+      <p class="font-display text-2xl leading-tight">{cls.name}</p>
+      <p class="text-sm text-umber">{cls.instructor} · {cls.duration_mins} min · {cls.level}</p>
+    </div>
+    <div class="md:w-36 text-sm text-umber">
+      {soldOut ? 'Waitlist' : almost ? `${cls.spots_available} left` : `${cls.spots_available} open`}
+    </div>
+    <div class="md:w-28 font-display text-xl">{formatPrice(cls.price_pence)}</div>
+    <div>
+      <a href={soldOut ? '#' : href} class={soldOut ? 'btn-ghost opacity-60 pointer-events-none' : 'btn-primary text-xs'}>
+        {soldOut ? 'Full' : 'Book'}
+      </a>
+    </div>
+  </article>
+)}

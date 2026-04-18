@@ -1,0 +1,99 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  jsonLd?: unknown;
+}
+
+const {
+  title = 'Dublin Pilates Co — Reformer Pilates Studio, Dublin 2',
+  description = 'A boutique reformer pilates studio in Dublin. Small-group classes, considered instruction, warm light.',
+  canonical,
+  jsonLd,
+} = Astro.props as Props;
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL ?? 'https://dublin-pilates-co.vercel.app';
+const url = canonical ?? new URL(Astro.url.pathname, siteUrl).toString();
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={url} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={url} />
+    <meta property="og:site_name" content="Dublin Pilates Co" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body class="min-h-screen bg-cream text-ink">
+    <header class="border-b border-sand/60">
+      <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+        <a href="/" class="flex items-baseline gap-2">
+          <span class="font-display text-2xl tracking-tight">Dublin Pilates Co.</span>
+          <span class="hidden md:inline kicker">Est. Fitzwilliam Lane</span>
+        </a>
+        <nav class="flex items-center gap-6 text-sm tracking-wide">
+          <a href="/" class="hover:text-umber">Studio</a>
+          <a href="/#classes" class="hover:text-umber">Schedule</a>
+          <a href="/book" class="hover:text-umber">Book</a>
+          <a href="/book" class="btn-primary text-xs">Reserve a mat →</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="mt-32 border-t border-sand/60 bg-bone/40">
+      <div class="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-4 gap-10 text-sm">
+        <div class="md:col-span-2">
+          <p class="font-display text-3xl mb-3">Dublin Pilates Co.</p>
+          <p class="text-umber max-w-sm leading-relaxed">
+            A reformer studio for the way your body actually moves. No mirrors, no shouting — just nine reformers,
+            natural light, and instructors who stay long enough to know your name.
+          </p>
+        </div>
+        <div>
+          <p class="kicker mb-3">Studio</p>
+          <p class="leading-relaxed text-ink/80">
+            17 Fitzwilliam Lane<br/>
+            Dublin 2, D02 XY87<br/>
+            <a href="mailto:hello@dublinpilates.co" class="underline decoration-sand underline-offset-4 hover:text-umber">hello@dublinpilates.co</a>
+          </p>
+        </div>
+        <div>
+          <p class="kicker mb-3">Hours</p>
+          <p class="leading-relaxed text-ink/80">
+            Mon–Fri · 07:00–20:00<br/>
+            Sat · 09:00–13:00<br/>
+            Sun · 09:00–12:00
+          </p>
+        </div>
+      </div>
+      <div class="border-t border-sand/60">
+        <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between text-xs text-umber gap-2">
+          <p>© {new Date().getFullYear()} Dublin Pilates Co. All mats accounted for.</p>
+          <p>Made in Dublin with warmth.</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

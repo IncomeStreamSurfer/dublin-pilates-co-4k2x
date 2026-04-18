@@ -1,0 +1,148 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ClassCard from '../components/ClassCard.astro';
+import { supabase, sortClasses, type PilatesClass } from '../lib/supabase';
+
+const { data, error } = await supabase
+  .from('dp_classes')
+  .select('*');
+
+if (error) console.error('[dp_classes]', error.message);
+
+const classes = sortClasses((data ?? []) as PilatesClass[]);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'HealthClub',
+  name: 'Dublin Pilates Co',
+  description: 'Boutique reformer pilates studio in Dublin 2 offering small-group classes for all levels.',
+  url: import.meta.env.PUBLIC_SITE_URL ?? 'https://dublin-pilates-co.vercel.app',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: '17 Fitzwilliam Lane',
+    addressLocality: 'Dublin',
+    postalCode: 'D02 XY87',
+    addressCountry: 'IE',
+  },
+  priceRange: '£25',
+  telephone: '+353 1 000 0000',
+  openingHours: ['Mo-Fr 07:00-20:00', 'Sa 09:00-13:00', 'Su 09:00-12:00'],
+};
+---
+
+<Layout
+  title="Dublin Pilates Co — Reformer Pilates Studio in Dublin 2"
+  description="A boutique reformer pilates studio on Fitzwilliam Lane. Small classes, warm light, classes from £25. Book online."
+  jsonLd={jsonLd}
+>
+  <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28 grid md:grid-cols-12 gap-10 items-end">
+      <div class="md:col-span-7">
+        <span class="kicker">Fitzwilliam Lane · Dublin 2</span>
+        <h1 class="font-display text-[3.25rem] md:text-[5.5rem] leading-[0.95] mt-4 mb-8">
+          Reformer pilates,<br/>
+          <em class="italic text-umber">made quiet again.</em>
+        </h1>
+        <p class="max-w-xl text-lg leading-relaxed text-ink/80 mb-10">
+          Nine reformers. One hour. Natural light pouring across the lane. Classes are small on purpose —
+          you'll leave taller, looser, and with an instructor who remembers how your shoulders carry your week.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="/book" class="btn-primary">Book a class · £25</a>
+          <a href="#classes" class="btn-ghost">See this week</a>
+        </div>
+      </div>
+      <div class="md:col-span-5">
+        <div class="aspect-[4/5] w-full bg-bone relative overflow-hidden rounded-sm">
+          <img
+            src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=80"
+            alt="Soft studio light on a reformer pilates machine"
+            class="absolute inset-0 w-full h-full object-cover grayscale-[15%]"
+            loading="eager"
+          />
+          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-ink/50 to-transparent p-6">
+            <p class="text-cream text-sm tracking-widest uppercase">No mirrors. No shouting. Just movement.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHILOSOPHY -->
+  <section class="bg-bone/50 border-y border-sand/60">
+    <div class="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
+      <div>
+        <p class="kicker mb-4">Small on purpose</p>
+        <h3 class="font-display text-3xl mb-3">Nine reformers.</h3>
+        <p class="text-ink/75 leading-relaxed">
+          That's the whole studio. You'll never queue, never compete for a spring, never be a number on a roster.
+        </p>
+      </div>
+      <div>
+        <p class="kicker mb-4">Instruction that lingers</p>
+        <h3 class="font-display text-3xl mb-3">Hands-on cues.</h3>
+        <p class="text-ink/75 leading-relaxed">
+          Our teachers came up through rehab and classical studios. They cue with their hands, not a microphone.
+        </p>
+      </div>
+      <div>
+        <p class="kicker mb-4">Made for Dublin</p>
+        <h3 class="font-display text-3xl mb-3">Off Merrion Square.</h3>
+        <p class="text-ink/75 leading-relaxed">
+          A restored Georgian mews four minutes from Pearse DART. Tea in the hall, grip socks at reception.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLASSES GRID -->
+  <section id="classes" class="max-w-6xl mx-auto px-6 py-24">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+      <div>
+        <span class="kicker">This week's schedule</span>
+        <h2 class="font-display text-5xl md:text-6xl mt-3">On the reformer.</h2>
+      </div>
+      <p class="max-w-md text-ink/70 leading-relaxed">
+        Each class is £25 and runs 50 minutes. Mats and equipment are included — bring water and, if you have them, your own grip socks.
+      </p>
+    </div>
+
+    {classes.length === 0 ? (
+      <div class="border border-sand/70 bg-white/60 p-10 text-center rounded-sm">
+        <p class="font-display text-2xl">The schedule is refreshing.</p>
+        <p class="text-umber mt-2">New classes appear here as soon as they're posted.</p>
+      </div>
+    ) : (
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {classes.slice(0, 9).map((cls) => <ClassCard cls={cls} />)}
+      </div>
+    )}
+
+    {classes.length > 0 && (
+      <div class="mt-14 text-center">
+        <a href="/book" class="btn-primary">See full schedule · Book →</a>
+      </div>
+    )}
+  </section>
+
+  <!-- QUOTE -->
+  <section class="bg-ink text-cream">
+    <div class="max-w-4xl mx-auto px-6 py-24 text-center">
+      <p class="font-display text-3xl md:text-5xl leading-tight italic">
+        "I've tried every reformer studio in Dublin. This is the one where my back finally went quiet."
+      </p>
+      <p class="mt-8 kicker text-cream/70">— Orla M., member since opening week</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="max-w-6xl mx-auto px-6 py-24 text-center">
+    <span class="kicker">First class?</span>
+    <h2 class="font-display text-5xl md:text-6xl mt-3 mb-6">Arrive ten minutes early. Tea is on.</h2>
+    <p class="max-w-xl mx-auto text-ink/70 mb-10 leading-relaxed">
+      Pick a class that sits well with your body this week. No memberships, no commitments — just £25 and a good hour.
+    </p>
+    <a href="/book" class="btn-primary">Reserve your mat</a>
+  </section>
+</Layout>
