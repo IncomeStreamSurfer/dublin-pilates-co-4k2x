@@ -12,11 +12,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/vercel": "^8.2.8",
-    "@supabase/supabase-js": "^2.50.0",
-    "@tailwindcss/vite": "^4.1.11",
+    "@astrojs/vercel": "^10.0.4",
+    "@supabase/supabase-js": "^2.103.3",
+    "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.8",
-    "stripe": "^17.5.0",
-    "tailwindcss": "^4.1.11"
+    "stripe": "^22.0.2",
+    "tailwindcss": "^4.2.2"
   }
 }
